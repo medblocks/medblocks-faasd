@@ -1,0 +1,42 @@
+listener:
+  slotName: myslot_1
+  refreshConnection: 30s
+  heartbeatInterval: 10s
+logger:
+  caller: false
+  level: info
+  humanReadable: true
+database:
+  host: db
+  port: 5432
+  name: ehrbase
+  user: postgres
+  password: postgres
+  debug: false
+  filter:
+    tables:
+      template_store:
+        - insert
+        - update
+        - delete
+      composition:
+        - insert
+        - update
+        - delete
+      ehr:
+        - insert
+        - update
+        - delete
+      folder:
+        - insert
+        - update
+        - delete
+      stored_query:
+        - insert
+        - update
+        - delete
+nats:
+  address: nats:4222
+  clusterID: faas-cluster
+  clientID: wal-listener
+  topic: "opehehr"
