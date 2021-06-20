@@ -171,7 +171,7 @@ install_faasd() {
   # write medblocks files
   $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/init.sql" --output "init.sql"
   $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/wal.yml" --output "wal.yml"
-  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/Caddyfile" --output "Caddyfile"
+  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/Caddyfile.template" --output "Caddyfile"
   $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/faasd-docker-compose.yml" --output "docker-compose.yaml"
   copy_extra_files
   
