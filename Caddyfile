@@ -1,0 +1,17 @@
+example.com {
+    handle /fhir/* {
+        reverse_proxy fhir:8080
+    }
+    handle /ehrbase/* {
+        reverse_proxy openehr:8080
+    }
+    handle {
+        respond "Not Found" 404
+    }
+    header /* {
+        ?Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "OPTIONS, GET, PUT, POST, DELETE"
+        Access-Control-Allow-Headers "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, Cache-Control"
+        Access-Control-Expose-Headers Authorization
+    }
+}

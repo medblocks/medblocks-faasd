@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   basic-auth-plugin:
-    image: ghcr.io/openfaas/basic-auth:0.20.5
+    image: ghcr.io/openfaas/basic-auth:0.20.12
     environment:
       - port=8080
       - secret_mount_path=/run/secrets
@@ -41,7 +41,7 @@ services:
        - "127.0.0.1:9090:9090"
 
   gateway:
-    image: ghcr.io/openfaas/gateway:0.20.11
+    image: ghcr.io/openfaas/gateway:0.20.12
     environment:
       - basic_auth=true
       - functions_provider_url=http://faasd-provider:8081/
@@ -97,80 +97,3 @@ services:
       - CAP_NET_RAW
     depends_on:
       - nats
-
-  # Medblocks Containers
-  fhir:
-    image: "tornadoalert/fhir:v5.4.1-nats"
-    environment:
-      spring.datasource.url: "jdbc:postgresql://db:5432/hapi"
-      spring.datasource.username: hapi
-      spring.datasource.password: hapi
-      spring.datasource.driverClassName: org.postgresql.Driver
-      hapi.fhir.subscription.resthook_enabled: "true"
-      hapi.fhir.subscription.websocket_enabled: "true"
-      hapi.fhir.client_id_strategy: ANY
-      hapi.fhir.nats: "nats://nats:4222"
-    depends_on: 
-      - db
-  openehr:
-    image: "ehrbase/ehrbase:0.16.5"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
-      SPRING_DATASOURCE_USERNAME: ehrbase
-      SPRING_DATASOURCE_PASSWORD: ehrbase
-      SERVER_AQLCONFIG_USEJSQUERY: "false"
-      SERVER_NODENAME: "localhost"
-    depends_on:
-      - db
-  
-  db:
-    # Must initialize on runtime
-    image: postgres
-    command: 
-      - -c
-      - max_replication_slots=10
-      - -c
-      - wal_level=logical
-    volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./postgres.conf:/etc/postgresql/postgresql.conf
-    environment:
-      POSTGRES_PASSWORD: admin
-      POSTGRES_USER: admin
-      POSTGRES_DB: hapi_r4
-  # Listens to db for openEHR event stream
-  wal-listner:
-    entrypoint:
-      - "./wal-listener"
-      - "-c" 
-      - "/app/config.yml"
-    image: theaxer/wal-listener:v1.2.0-5-g66dbbab
-    volumes:
-        # TO CHANGE
-        - ./config.yml:/app/config.yml
-    depends_on: 
-      - db
-      - nats
-#   caddy:
-#     image: caddy:2.4.1
-#     ports:
-#       - "80:80"
-#       - "8080:8080"
-#     volumes:
-#       - ./Caddyfile:/etc/caddy/Caddyfile
-#       - caddy_data:/data
-#       - caddy_config:/config
-  
-#   medblocks-dashboard:
-#     # NodeJS/Django?
-#     environment:
-#       FHIR_URL:
-#       OPENEHR_URL:
-#       OPENFAAS_URL:
-#       CADDY_URL:
-#       DATABASE_URL:
-#       DATABASE_USERNAME:
-#       DATABASE_PASSWORD:
-
-volumes: 
-    db-data:
