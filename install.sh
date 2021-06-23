@@ -128,6 +128,10 @@ install_containerd() {
 }
 
 copy_extra_files(){
+  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/init.sql" --output "init.sql"
+  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/wal.yml" --output "wal.yml"
+  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/Caddyfile.template" --output "Caddyfile"
+  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/faasd-docker-compose.yml" --output "docker-compose.yaml"
   $SUDO mkdir -p "$medblocks_path/caddy" "$medblocks_path/postgres"
   echo "Writing $medblocks_path/caddy/Caddyfile";
   $SUDO sed "s/example.com/$domain/g" Caddyfile > "$medblocks_path/caddy/Caddyfile"
@@ -147,7 +151,12 @@ medblocks_postinstall(){
   $SUDO chown -R "$faasd_user:$faasd_user" "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$faasd_path/caddy/config"
 }
 
-install_faasd() {
+setup_medblocks(){
+  copy_extra_files
+  medblocks_postinstall
+}
+
+setup_faasd() {
   arch=$(uname -m)
   case $arch in
   x86_64 | amd64)
@@ -179,16 +188,7 @@ install_faasd() {
   $SUDO curl -fSLs "https://raw.githubusercontent.com/openfaas/faasd/${version}/resolv.conf" --output "resolv.conf"
   $SUDO curl -fSLs "https://raw.githubusercontent.com/openfaas/faasd/${version}/hack/faasd-provider.service" --output "hack/faasd-provider.service"
   $SUDO curl -fSLs "https://raw.githubusercontent.com/openfaas/faasd/${version}/hack/faasd.service" --output "hack/faasd.service"
-  
-  echo "Setting up medblocks-faasd"
-  # write medblocks files
-  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/init.sql" --output "init.sql"
-  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/wal.yml" --output "wal.yml"
-  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/Caddyfile.template" --output "Caddyfile"
-  $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/faasd-docker-compose.yml" --output "docker-compose.yaml"
-  copy_extra_files
-  
-  $SUDO /usr/local/bin/faasd install
+
 }
 
 install_faas_cli() {
@@ -204,6 +204,7 @@ echo "net.ipv4.conf.all.forwarding=1" | $SUDO tee -a /etc/sysctl.conf
 install_cni_plugins
 install_containerd
 install_faas_cli
-install_faasd
-medblocks_postinstall
-# install_caddy
+setup_faasd
+setup_medblocks
+
+$SUDO /usr/local/bin/faasd install
