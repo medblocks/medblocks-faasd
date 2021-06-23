@@ -3,6 +3,10 @@
 export OWNER="openfaas"
 export REPO="faasd"
 
+faasd_path="/var/lib/faasd"
+medblocks_path="$faasd_path/medblocks"
+faasd_user="1007"
+
 if [ ! $medblocksversion ]; then
   echo "Finding medblocks-faasd latest version from GitHub"
   medblocksversion=$(curl -sI https://github.com/medblocks/medblocks-faasd/releases/latest | grep -i "location:" | awk -F"/" '{ printf "%s", $NF }' | tr -d '\r')
@@ -124,14 +128,23 @@ install_containerd() {
 }
 
 copy_extra_files(){
-  faasd_path="/var/lib/faasd"
-  $SUDO mkdir -p "$faasd_path"
-  echo "Writing $faasd_path/Caddyfile";
-  $SUDO sed "s/example.com/$domain/g" Caddyfile > "$faasd_path/Caddyfile"
-  echo "Writing $faasd_path/init.sql"
-  $SUDO cp "init.sql" "$faasd_path/init.sql"
-  echo "Writing $faasd_path/wal.yml"
-  $SUDO cp "wal.yml" "$faasd_path/wal.yml"
+  $SUDO mkdir -p "$medblocks_path/caddy" "$medblocks_path/postgres"
+  echo "Writing $medblocks_path/caddy/Caddyfile";
+  $SUDO sed "s/example.com/$domain/g" Caddyfile > "$medblocks_path/caddy/Caddyfile"
+  echo "Writing $medblocks_path/postgres/init.sql"
+  $SUDO cp "init.sql" "$medblocks_path/postgres/init.sql"
+  echo "Writing $medblocks_path/postgres/wal.yml"
+  $SUDO cp "wal.yml" "$medblocks_path/postgres/wal.yml"
+}
+
+medblocks_setup(){
+  echo "Setting up faasd user"
+  $SUDO groupadd --gid "$faasd_user" faasd
+  useradd --uid "$faasd_user" --system --no-create-home --gid "$faasd_user" faasd
+  echo "Setting up directories for medblocks services"
+  $SUDO mkdir -p "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$medblocks_path/caddy/config"
+  echo "Changing ownership of directories"
+  $SUDO chown -R "$faasd_user:$faasd_user" "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$faasd_path/caddy/config"
 }
 
 install_faasd() {
