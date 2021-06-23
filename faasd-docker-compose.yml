@@ -96,19 +96,19 @@ services:
     cap_add:
       - CAP_NET_RAW
 
-  caddy:
-    image: docker.io/library/caddy:2.4.1
-    user: "1007"
-    ports:
-      - "127.0.0.1:2019:2019"
-      - "80:80"
-      - "443:443"
-    cap_add:
-      - CAP_NET_RAW
-    volumes:
-      - ./medblocks/caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./medblocks/caddy/data:/data
-      - ./medblocks/caddy/config:/config
+  # caddy:
+  #   image: docker.io/library/caddy:2.4.1
+  #   user: "1007"
+  #   ports:
+  #     - "127.0.0.1:2019:2019"
+  #     - "80:80"
+  #     - "443:443"
+  #   cap_add:
+  #     - CAP_NET_RAW
+  #   volumes:
+  #     - ./medblocks/caddy/Caddyfile:/etc/caddy/Caddyfile
+  #     - ./medblocks/caddy/data:/data
+  #     - ./medblocks/caddy/config:/config
   db:
     image: docker.io/library/postgres:12
     command:
@@ -136,6 +136,8 @@ services:
       SERVER_NODENAME: "localhost"
     depends_on:
       - db
+    ports:
+      - "9002:8080"
   fhir:
     image: "docker.io/medblocks/hapi:v5.4.1-pubsub"
     environment:
@@ -149,3 +151,5 @@ services:
       hapi.fhir.nats: "nats://nats:4222"
     depends_on: 
       - db
+    ports:
+      - "9001:8080"

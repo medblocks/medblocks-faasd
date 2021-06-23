@@ -135,8 +135,7 @@ copy_extra_files(){
   $SUDO mkdir -p "$medblocks_path/caddy" "$medblocks_path/postgres"
   echo "Setting route for $domain in Caddyfile";
   $SUDO sed -i "s/example.com/$domain/g" "Caddyfile"
-  echo "Writing $medblocks_path/caddy/Caddyfile";
-  $SUDO cp "Caddyfile" "$medblocks_path/caddy/Caddyfile"
+  
   echo "Writing $medblocks_path/postgres/init.sql"
   $SUDO cp "init.sql" "$medblocks_path/postgres/init.sql"
   echo "Writing $medblocks_path/postgres/wal.yml"
@@ -199,6 +198,46 @@ install_faas_cli() {
   curl -sLS https://cli.openfaas.com | $SUDO sh
 }
 
+install_caddy() {
+    arch=$(uname -m)
+    case $arch in
+    x86_64 | amd64)
+      suffix="amd64"
+      ;;
+    aarch64)
+      suffix=-arm64
+      ;;
+    armv7l)
+      suffix=-armv7
+      ;;
+    *)
+      echo "Unsupported architecture $arch"
+      exit 1
+      ;;
+    esac
+    curl -sSL "https://github.com/caddyserver/caddy/releases/download/v2.2.1/caddy_2.2.1_linux_${suffix}.tar.gz" | $SUDO tar -xvz -C /usr/bin/ caddy
+    $SUDO curl -fSLs https://raw.githubusercontent.com/caddyserver/dist/master/init/caddy.service --output /etc/systemd/system/caddy.service
+    
+    
+    
+    $SUDO mkdir -p /etc/caddy
+    $SUDO mkdir -p /var/lib/caddy
+    
+    if $(id caddy >/dev/null 2>&1); then
+      echo "User caddy already exists."
+    else
+      $SUDO useradd --system --home /var/lib/caddy --shell /bin/false caddy
+    fi
+    echo "Writing /etc/caddy/Caddyfile";
+    $SUDO cp "/tmp/faasd-${version}-installation/Caddyfile" "/etc/caddy/Caddyfile"
+    $SUDO chown --recursive caddy:caddy /var/lib/caddy
+    $SUDO chown --recursive caddy:caddy /etc/caddy
+
+    $SUDO systemctl enable caddy
+    $SUDO systemctl start caddy
+
+}
+
 verify_system
 install_required_packages
 
@@ -213,3 +252,6 @@ setup_medblocks
 
 echo "Installing medblocks-faasd"
 $SUDO /usr/local/bin/faasd install
+echo "Setting up Caddy"
+install_caddy
+echo "Done"

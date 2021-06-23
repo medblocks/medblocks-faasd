@@ -1,12 +1,12 @@
 example.com {
     handle /fhir/* {
-        reverse_proxy fhir:8080
+        reverse_proxy 127.0.0.1:9001
     }
     handle /ehrbase/* {
-        reverse_proxy openehr:8080
+        reverse_proxy 127.0.0.1:9002
     }
     handle {
-        respond "Not Found" 404
+        reverse_proxy 127.0.0.1:8080
     }
     header /* {
         ?Access-Control-Allow-Origin "*"
