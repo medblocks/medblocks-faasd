@@ -27,7 +27,7 @@ _____ ___ _| | |_| |___ ___| |_ ___
 
 $medblocksversion                          
 "
-read -p "Enter domain name (for HTTPS. Press Enter to skip): " domain
+read -p "Domain name (for HTTPS. Press Enter to skip): " domain
 
 if [ ! $domain ]; then
 echo "No domain name for HTTPS provided. Traffic will be served only from port 80."
@@ -133,8 +133,10 @@ copy_extra_files(){
   $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/Caddyfile.template" --output "Caddyfile"
   $SUDO curl -fSLs "https://raw.githubusercontent.com/medblocks/medblocks-faasd/${medblocksversion}/faasd-docker-compose.yml" --output "docker-compose.yaml"
   $SUDO mkdir -p "$medblocks_path/caddy" "$medblocks_path/postgres"
+  echo "Setting route for $domain in Caddyfile";
+  $SUDO sed -i "s/example.com/$domain/g" "Caddyfile"
   echo "Writing $medblocks_path/caddy/Caddyfile";
-  $SUDO sed "s/example.com/$domain/g" Caddyfile > "$medblocks_path/caddy/Caddyfile"
+  $SUDO cp "Caddyfile" "$medblocks_path/caddy/Caddyfile"
   echo "Writing $medblocks_path/postgres/init.sql"
   $SUDO cp "init.sql" "$medblocks_path/postgres/init.sql"
   echo "Writing $medblocks_path/postgres/wal.yml"
@@ -144,11 +146,11 @@ copy_extra_files(){
 medblocks_postinstall(){
   echo "Setting up faasd user"
   $SUDO groupadd --gid "$faasd_user" faasd
-  useradd --uid "$faasd_user" --system --no-create-home --gid "$faasd_user" faasd
+  $SUDO useradd --uid "$faasd_user" --system --no-create-home --gid "$faasd_user" faasd
   echo "Setting up directories for medblocks services"
   $SUDO mkdir -p "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$medblocks_path/caddy/config"
   echo "Changing ownership of directories"
-  $SUDO chown -R "$faasd_user:$faasd_user" "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$faasd_path/caddy/config"
+  $SUDO chown -R "$faasd_user:$faasd_user" "$medblocks_path/postgres/data" "$medblocks_path/postgres/run" "$medblocks_path/caddy/data" "$medblocks_path/caddy/config"
 }
 
 setup_medblocks(){
