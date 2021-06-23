@@ -152,6 +152,8 @@ medblocks_postinstall(){
 }
 
 setup_medblocks(){
+  cd /tmp/faasd-${version}-installation
+  echo "Setting up medblocks"
   copy_extra_files
   medblocks_postinstall
 }
@@ -207,4 +209,5 @@ install_faas_cli
 setup_faasd
 setup_medblocks
 
+echo "Installing medblocks-faasd"
 $SUDO /usr/local/bin/faasd install
