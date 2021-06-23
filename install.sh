@@ -137,7 +137,7 @@ copy_extra_files(){
   $SUDO cp "wal.yml" "$medblocks_path/postgres/wal.yml"
 }
 
-medblocks_setup(){
+medblocks_postinstall(){
   echo "Setting up faasd user"
   $SUDO groupadd --gid "$faasd_user" faasd
   useradd --uid "$faasd_user" --system --no-create-home --gid "$faasd_user" faasd
@@ -205,4 +205,5 @@ install_cni_plugins
 install_containerd
 install_faas_cli
 install_faasd
+medblocks_postinstall
 # install_caddy
