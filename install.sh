@@ -19,14 +19,16 @@ if [ ! $medblocksversion ]; then
 fi
 
 echo "
-Thank you for trying out medblocks.
-For more information and support, visit https://medblocks.org
             _ _   _         _       
 _____ ___ _| | |_| |___ ___| |_ ___ 
 |     | -_| . | . | | . |  _| '_|_ -|
 |_|_|_|___|___|___|_|___|___|_,_|___|
+  $medblocksversion
 
-$medblocksversion                          
+Thank you for trying out medblocks.
+For more information and support, visit https://medblocks.org. 
+
+By continuing, you agree to the SNOMED CT license for using the Hermes Terminology Service at https://raw.githubusercontent.com/medblocks/medblocks-faasd/master/SNOMED_LICENSE.md
 "
 read -p "Domain name (for HTTPS. Press Enter to skip): " domain
 

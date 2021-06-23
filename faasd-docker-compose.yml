@@ -8,7 +8,6 @@ services:
       - user_filename=basic-auth-user
       - pass_filename=basic-auth-password
     volumes:
-      # we assume cwd == /var/lib/faasd
       - type: bind
         source: ./secrets/basic-auth-password
         target: /run/secrets/basic-auth-password
@@ -57,7 +56,6 @@ services:
       - scale_from_zero=true
       - function_namespace=openfaas-fn
     volumes:
-      # we assume cwd == /var/lib/faasd
       - type: bind
         source: ./secrets/basic-auth-password
         target: /run/secrets/basic-auth-password
@@ -86,7 +84,6 @@ services:
       - basic_auth=true
       - secret_mount_path=/run/secrets
     volumes:
-      # we assume cwd == /var/lib/faasd
       - type: bind
         source: ./secrets/basic-auth-password
         target: /run/secrets/basic-auth-password
@@ -96,19 +93,6 @@ services:
     cap_add:
       - CAP_NET_RAW
 
-  # caddy:
-  #   image: docker.io/library/caddy:2.4.1
-  #   user: "1007"
-  #   ports:
-  #     - "127.0.0.1:2019:2019"
-  #     - "80:80"
-  #     - "443:443"
-  #   cap_add:
-  #     - CAP_NET_RAW
-  #   volumes:
-  #     - ./medblocks/caddy/Caddyfile:/etc/caddy/Caddyfile
-  #     - ./medblocks/caddy/data:/data
-  #     - ./medblocks/caddy/config:/config
   db:
     image: docker.io/library/postgres:12
     command:
@@ -139,7 +123,7 @@ services:
     depends_on: 
       - db
     ports:
-      - "8081:8080"
+      - "5001:8080"
   openehr:
     image: "docker.io/ehrbase/ehrbase:0.16.5"
     environment:
@@ -151,4 +135,4 @@ services:
     depends_on:
       - db
     ports:
-      - "8082:8080"
+      - "5002:8080"
