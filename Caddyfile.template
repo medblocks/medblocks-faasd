@@ -1,9 +1,9 @@
 example.com {
     handle /fhir/* {
-        reverse_proxy 127.0.0.1:9001
+        reverse_proxy 127.0.0.1:8081
     }
     handle /ehrbase/* {
-        reverse_proxy 127.0.0.1:9002
+        reverse_proxy 127.0.0.1:8082
     }
     handle {
         reverse_proxy 127.0.0.1:8080

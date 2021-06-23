@@ -125,19 +125,6 @@ services:
       - ./medblocks/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_PASSWORD: postgres
-
-  openehr:
-    image: "docker.io/ehrbase/ehrbase:0.16.5"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
-      SPRING_DATASOURCE_USERNAME: ehrbase
-      SPRING_DATASOURCE_PASSWORD: ehrbase
-      SERVER_AQLCONFIG_USEJSQUERY: "false"
-      SERVER_NODENAME: "localhost"
-    depends_on:
-      - db
-    ports:
-      - "9002:8080"
   fhir:
     image: "docker.io/medblocks/hapi:v5.4.1-pubsub"
     environment:
@@ -152,4 +139,16 @@ services:
     depends_on: 
       - db
     ports:
-      - "9001:8080"
+      - "8081:8080"
+  openehr:
+    image: "docker.io/ehrbase/ehrbase:0.16.5"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
+      SPRING_DATASOURCE_USERNAME: ehrbase
+      SPRING_DATASOURCE_PASSWORD: ehrbase
+      SERVER_AQLCONFIG_USEJSQUERY: "false"
+      SERVER_NODENAME: "localhost"
+    depends_on:
+      - db
+    ports:
+      - "8082:8080"

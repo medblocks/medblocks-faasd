@@ -2,6 +2,7 @@
 
 export OWNER="openfaas"
 export REPO="faasd"
+export medblocksversion="master"
 
 faasd_path="/var/lib/faasd"
 medblocks_path="$faasd_path/medblocks"
@@ -195,6 +196,7 @@ setup_faasd() {
 }
 
 install_faas_cli() {
+  echo "Installing faas_cli"
   curl -sLS https://cli.openfaas.com | $SUDO sh
 }
 
@@ -215,7 +217,7 @@ install_caddy() {
       exit 1
       ;;
     esac
-    curl -sSL "https://github.com/caddyserver/caddy/releases/download/v2.2.1/caddy_2.2.1_linux_${suffix}.tar.gz" | $SUDO tar -xvz -C /usr/bin/ caddy
+    curl -sSL "https://github.com/caddyserver/caddy/releases/download/v2.4.1/caddy_2.4.1_linux_${suffix}.tar.gz" | $SUDO tar -xvz -C /usr/bin/ caddy
     $SUDO curl -fSLs https://raw.githubusercontent.com/caddyserver/dist/master/init/caddy.service --output /etc/systemd/system/caddy.service
     
     
@@ -246,7 +248,7 @@ echo "net.ipv4.conf.all.forwarding=1" | $SUDO tee -a /etc/sysctl.conf
 
 install_cni_plugins
 install_containerd
-install_faas_cli
+# install_faas_cli
 setup_faasd
 setup_medblocks
 
@@ -254,4 +256,4 @@ echo "Installing medblocks-faasd"
 $SUDO /usr/local/bin/faasd install
 echo "Setting up Caddy"
 install_caddy
-echo "Done"
+echo "Setup done. It might take some time to pull the containers and "
