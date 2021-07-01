@@ -25,7 +25,7 @@ _____ ___ _| | |_| |___ ___| |_ ___
 |_|_|_|___|___|___|_|___|___|_,_|___|
   $medblocksversion
 
-Thank you for trying out medblocks.
+Thank you for trying out medblocks-faasd.
 For more information and support, visit https://medblocks.org. 
 
 By continuing, you agree to the SNOMED CT license for using the Hermes Terminology Service at https://raw.githubusercontent.com/medblocks/medblocks-faasd/master/SNOMED_LICENSE.md
@@ -258,4 +258,4 @@ echo "Installing medblocks-faasd"
 $SUDO /usr/local/bin/faasd install
 echo "Setting up Caddy"
 install_caddy
-echo "Setup done. It might take some time to pull the containers and "
+echo "Setup done. It might take some time to pull all the containers. Check the status with the command above."

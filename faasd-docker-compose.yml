@@ -37,7 +37,7 @@ services:
     cap_add:
       - CAP_NET_RAW
     ports:
-       - "127.0.0.1:9090:9090"
+      - "127.0.0.1:9090:9090"
 
   gateway:
     image: ghcr.io/openfaas/gateway:0.20.12
@@ -69,7 +69,7 @@ services:
       - nats
       - prometheus
     ports:
-       - "8080:8080"
+      - "8080:8080"
 
   queue-worker:
     image: docker.io/openfaas/queue-worker:0.11.2
@@ -93,7 +93,29 @@ services:
     cap_add:
       - CAP_NET_RAW
 
-  db:
+  connector:
+    image: ghcr.io/openfaas/nats-connector:latest
+    environment:
+      gateway_url: http://gateway:8080
+      topics: "fhir.>,openehr.>"
+      print_response: "true"
+      basic_auth: "true"
+      asynchronous_invocation: "false"
+      secret_mount_path: "/run/secrets/"
+    volumes:
+      - type: bind
+        source: ./secrets/basic-auth-password
+        target: /run/secrets/basic-auth-password
+      - type: bind
+        source: ./secrets/basic-auth-user
+        target: /run/secrets/basic-auth-user
+    cap_add:
+      - CAP_NET_RAW
+    depends_on:
+      - nats
+      - gateway
+
+  postgres:
     image: docker.io/library/postgres:12
     command:
       - docker-entrypoint.sh
@@ -109,10 +131,11 @@ services:
       - ./medblocks/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_PASSWORD: postgres
+
   fhir:
     image: "docker.io/medblocks/hapi:v5.4.1-pubsub"
     environment:
-      spring.datasource.url: "jdbc:postgresql://db:5432/hapi"
+      spring.datasource.url: "jdbc:postgresql://postgres:5432/hapi"
       spring.datasource.username: hapi
       spring.datasource.password: hapi
       spring.datasource.driverClassName: org.postgresql.Driver
@@ -120,19 +143,20 @@ services:
       hapi.fhir.subscription.websocket_enabled: "true"
       hapi.fhir.client_id_strategy: ANY
       hapi.fhir.nats: "nats://nats:4222"
-    depends_on: 
-      - db
+    depends_on:
+      - postgres
     ports:
       - "5001:8080"
+
   openehr:
     image: "docker.io/ehrbase/ehrbase:0.16.5"
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/ehrbase"
       SPRING_DATASOURCE_USERNAME: ehrbase
       SPRING_DATASOURCE_PASSWORD: ehrbase
       SERVER_AQLCONFIG_USEJSQUERY: "false"
       SERVER_NODENAME: "localhost"
     depends_on:
-      - db
+      - postgres
     ports:
       - "5002:8080"
