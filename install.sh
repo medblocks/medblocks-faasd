@@ -26,9 +26,7 @@ _____ ___ _| | |_| |___ ___| |_ ___
   $medblocksversion
 
 Thank you for trying out medblocks-faasd.
-For more information and support, visit https://medblocks.org. 
-
-By continuing, you agree to the SNOMED CT license for using the Hermes Terminology Service at https://raw.githubusercontent.com/medblocks/medblocks-faasd/master/SNOMED_LICENSE.md
+For more information and support, visit https://medblocks.org.
 "
 read -p "Domain name (for HTTPS. Press Enter to skip): " domain
 
