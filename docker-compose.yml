@@ -70,19 +70,6 @@ services:
     image: oryd/kratos:latest-sqlite
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
-      - LOG_LEVEL=trace
-      - SERVE_PUBLIC_BASE_URL=http://127.0.0.1/kratos/public/
-      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
-      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
-      - SELFSERVICE_WHITELISTED_RETURN_URLS=http://127.0.0.1/auth/,https://google.com
-      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://127.0.0.1/auth/error
-      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://127.0.0.1/auth/settings
-      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://127.0.0.1/auth/recovery
-      - SELFSERVICE_FLOWS_VERIFICATION_UI_URL=http://127.0.0.1/auth/verify
-      - SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
-      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/login
-      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://127.0.0.1/auth/login
-      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://127.0.0.1/auth/registration
     volumes:
       - type: bind
         source: ./kratos
@@ -142,10 +129,6 @@ services:
     image: oryd/hydra:v1.10.6
     environment:
       - DSN=postgres://hydra:hydra@db:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
-      - URLS_SELF_ISSUER=http://127.0.0.1/hydra/public
-      - URLS_CONSENT=http://127.0.0.1/auth/hydraconsent
-      - URLS_LOGIN=http://127.0.0.1/auth/hydralogin
-      - URLS_LOGOUT=http://127.0.0.1/auth/hydra/logout
     command:
       migrate -c /etc/config/hydra/hydra.yml sql -e --yes
     volumes:
@@ -156,7 +139,7 @@ services:
     restart: on-failure
    
 
-  medblocksauth:
+  auth:
     image: athulknair123/medblocks-auth:v0
     environment:
       - KRATOS_PUBLIC_URL=http://kratos:4433

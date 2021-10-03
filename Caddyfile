@@ -1,29 +1,29 @@
 :80 {
-    handle /fhir/* {
+    handle /fhir* {
         reverse_proxy fhir:8080
     }
-    handle /ehrbase/* {
+    handle /ehrbase* {
         reverse_proxy openehr:8080
     }
-    handle_path /hydra/public/* {
+    handle_path /hydra/public* {
         rewrite * {path}
         reverse_proxy hydra:4444
     }
-    handle_path /hydra/admin/* {
+    handle_path /hydra/admin* {
         rewrite * {path}
         reverse_proxy hydra:4445
     }
-    handle_path /kratos/public/* {
+    handle_path /kratos/public* {
         rewrite * {path}
         reverse_proxy kratos:4433
     }
-    handle_path /kratos/admin/* {
+    handle_path /kratos/admin* {
         rewrite * {path}
         reverse_proxy kratos:4434
     }
-    handle_path /auth/* {
+    handle_path /auth* {
         rewrite * {path}
-        reverse_proxy medblocksauth:3000
+        reverse_proxy auth:4455
     }
     handle {
         respond "Not Found" 404
