@@ -1,47 +1,47 @@
 version: "3.7"
 services:
-  wal-listner:
-    image: medblocks/wal-listner
-    environment:
-      WAIT_HOSTS: db:5432, openehr:8080
-      WAIT_TIMEOUT: 300
-      WAIT_AFTER: 5
-      WAIT_SLEEP_INTERVAL: 5
-    command: sh -c "/wait && /wal-listner -c /app/config.yml"
-    volumes:
-      - ./wal.yml:/app/config.yml
-    depends_on: 
-      - db
-      - openehr
-      - nats
-  nats:
-    image: docker.io/library/nats-streaming:0.11.2
-    ports:
-      - "4222:4222"
-  openehr:
-    image: "ehrbase/ehrbase:0.16.5"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
-      SPRING_DATASOURCE_USERNAME: ehrbase
-      SPRING_DATASOURCE_PASSWORD: ehrbase
-      SERVER_AQLCONFIG_USEJSQUERY: "false"
-      SERVER_NODENAME: "localhost"
-    depends_on:
-      - db
+  # wal-listner:
+  #   image: medblocks/wal-listner
+  #   environment:
+  #     WAIT_HOSTS: db:5432, openehr:8080
+  #     WAIT_TIMEOUT: 300
+  #     WAIT_AFTER: 5
+  #     WAIT_SLEEP_INTERVAL: 5
+  #   command: sh -c "/wait && /wal-listner -c /app/config.yml"
+  #   volumes:
+  #     - ./wal.yml:/app/config.yml
+  #   depends_on: 
+  #     - db
+  #     - openehr
+  #     - nats
+  # nats:
+  #   image: docker.io/library/nats-streaming:0.11.2
+  #   ports:
+  #     - "4222:4222"
+  # openehr:
+  #   image: "ehrbase/ehrbase:0.16.5"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/ehrbase"
+  #     SPRING_DATASOURCE_USERNAME: ehrbase
+  #     SPRING_DATASOURCE_PASSWORD: ehrbase
+  #     SERVER_AQLCONFIG_USEJSQUERY: "false"
+  #     SERVER_NODENAME: "localhost"
+  #   depends_on:
+  #     - db
 
-  fhir:
-    image: "tornadoalert/fhir:v5.4.1-nats"
-    environment:
-      spring.datasource.url: "jdbc:postgresql://db:5432/hapi"
-      spring.datasource.username: hapi
-      spring.datasource.password: hapi
-      spring.datasource.driverClassName: org.postgresql.Driver
-      hapi.fhir.subscription.resthook_enabled: "true"
-      hapi.fhir.subscription.websocket_enabled: "true"
-      hapi.fhir.client_id_strategy: ANY
-      hapi.fhir.nats: "nats://nats:4222"
-    depends_on: 
-      - db
+  # fhir:
+  #   image: "tornadoalert/fhir:v5.4.1-nats"
+  #   environment:
+  #     spring.datasource.url: "jdbc:postgresql://db:5432/hapi"
+  #     spring.datasource.username: hapi
+  #     spring.datasource.password: hapi
+  #     spring.datasource.driverClassName: org.postgresql.Driver
+  #     hapi.fhir.subscription.resthook_enabled: "true"
+  #     hapi.fhir.subscription.websocket_enabled: "true"
+  #     hapi.fhir.client_id_strategy: ANY
+  #     hapi.fhir.nats: "nats://nats:4222"
+  #   depends_on: 
+  #     - db
 
   db:
     image: postgres
@@ -67,7 +67,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
   kratos-migrate:
-    image: oryd/kratos:latest-sqlite
+    image: kratos
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     volumes:
@@ -81,7 +81,7 @@ services:
   kratos:
     depends_on:
       - kratos-migrate
-    image:  oryd/kratos:latest-sqlite
+    image:  kratos
     restart: unless-stopped
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
@@ -106,7 +106,7 @@ services:
    
 
   hydra:
-    image: oryd/hydra:v1.10.6
+    image: hydra
     command:
       serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
     volumes:
@@ -126,7 +126,7 @@ services:
    
 
   hydra-migrate:
-    image: oryd/hydra:v1.10.6
+    image: hydra
     environment:
       - DSN=postgres://hydra:hydra@db:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command:
@@ -140,17 +140,18 @@ services:
    
 
   auth:
-    image: athulknair123/medblocks-auth:v0
+    image: auth
     environment:
       - KRATOS_PUBLIC_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_BROWSER_URL=http://127.0.0.1/kratos/admin
       - BASE_URL=http://127.0.0.1/auth/
       - HYDRA_ADMIN_URL=http://hydra:4445
-   
+      - LOGO_URL=https://secureservercdn.net/45.40.150.81/t71.143.myftpupload.com/wp-content/uploads/2021/05/KanTime-Logo-Tagline.svg
+      - PORT=4455
 
-  mailslurper:
-    image: oryd/mailslurper:smtps-latest   
+  # mailslurper:
+  #   image: oryd/mailslurper:smtps-latest   
 
 volumes: 
   db-data:
