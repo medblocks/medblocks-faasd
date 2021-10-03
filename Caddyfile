@@ -5,10 +5,29 @@
     handle /ehrbase/* {
         reverse_proxy openehr:8080
     }
+    handle_path /hydra/public/* {
+        rewrite * {path}
+        reverse_proxy hydra:4444
+    }
+    handle_path /hydra/admin/* {
+        rewrite * {path}
+        reverse_proxy hydra:4445
+    }
+    handle_path /kratos/public/* {
+        rewrite * {path}
+        reverse_proxy kratos:4433
+    }
+    handle_path /kratos/admin/* {
+        rewrite * {path}
+        reverse_proxy kratos:4434
+    }
+    handle_path /auth/* {
+        rewrite * {path}
+        reverse_proxy medblocksauth:3000
+    }
     handle {
         respond "Not Found" 404
     }
-    
     header /* {
         ?Access-Control-Allow-Origin "*"
         Access-Control-Allow-Methods "OPTIONS, GET, PUT, POST, DELETE"

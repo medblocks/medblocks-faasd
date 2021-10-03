@@ -28,8 +28,7 @@ services:
       SERVER_NODENAME: "localhost"
     depends_on:
       - db
-    ports:
-      - 5002:8080
+
   fhir:
     image: "tornadoalert/fhir:v5.4.1-nats"
     environment:
@@ -43,8 +42,7 @@ services:
       hapi.fhir.nats: "nats://nats:4222"
     depends_on: 
       - db
-    ports:
-      - 5001:8080
+
   db:
     image: postgres
     command: 
@@ -57,8 +55,7 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_PASSWORD: postgres
-    ports:
-      - 5432:5432
+
   caddy:
     image: caddy:2.4.1
     ports:
@@ -73,6 +70,19 @@ services:
     image: oryd/kratos:latest-sqlite
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+      - LOG_LEVEL=trace
+      - SERVE_PUBLIC_BASE_URL=http://127.0.0.1/kratos/public/
+      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
+      - SELFSERVICE_WHITELISTED_RETURN_URLS=http://127.0.0.1/auth/,https://google.com
+      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://127.0.0.1/auth/error
+      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://127.0.0.1/auth/settings
+      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://127.0.0.1/auth/recovery
+      - SELFSERVICE_FLOWS_VERIFICATION_UI_URL=http://127.0.0.1/auth/verify
+      - SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
+      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/login
+      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://127.0.0.1/auth/login
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://127.0.0.1/auth/registration
     volumes:
       - type: bind
         source: ./kratos
@@ -85,13 +95,22 @@ services:
     depends_on:
       - kratos-migrate
     image:  oryd/kratos:latest-sqlite
-    ports:
-      - '4433:4433' # public
-      - '4434:4434' # admin
     restart: unless-stopped
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
       - LOG_LEVEL=trace
+      - SERVE_PUBLIC_BASE_URL=http://127.0.0.1/kratos/public
+      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
+      - SELFSERVICE_WHITELISTED_RETURN_URLS=http://127.0.0.1/auth/,https://google.com
+      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://127.0.0.1/auth/error
+      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://127.0.0.1/auth/settings
+      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://127.0.0.1/auth/recovery
+      - SELFSERVICE_FLOWS_VERIFICATION_UI_URL=http://127.0.0.1/auth/verify
+      - SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/
+      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://127.0.0.1/auth/login
+      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://127.0.0.1/auth/login
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://127.0.0.1/auth/registration
     command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
     volumes:
       - type: bind
@@ -101,10 +120,6 @@ services:
 
   hydra:
     image: oryd/hydra:v1.10.6
-    ports:
-      - "4444:4444" # Public port
-      - "4445:4445" # Admin port
-      - "5555:5555" # Port for hydra token user
     command:
       serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
     volumes:
@@ -114,6 +129,10 @@ services:
         target: /etc/config/hydra
     environment:
       - DSN=postgres://hydra:hydra@db:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - URLS_SELF_ISSUER=http://127.0.0.1/hydra/public
+      - URLS_CONSENT=http://127.0.0.1/auth/hydraconsent
+      - URLS_LOGIN=http://127.0.0.1/auth/hydralogin
+      - URLS_LOGOUT=http://127.0.0.1/auth/hydra/logout
     restart: unless-stopped
     depends_on:
       - hydra-migrate
@@ -123,6 +142,10 @@ services:
     image: oryd/hydra:v1.10.6
     environment:
       - DSN=postgres://hydra:hydra@db:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - URLS_SELF_ISSUER=http://127.0.0.1/hydra/public
+      - URLS_CONSENT=http://127.0.0.1/auth/hydraconsent
+      - URLS_LOGIN=http://127.0.0.1/auth/hydralogin
+      - URLS_LOGOUT=http://127.0.0.1/auth/hydra/logout
     command:
       migrate -c /etc/config/hydra/hydra.yml sql -e --yes
     volumes:
@@ -134,23 +157,17 @@ services:
    
 
   medblocksauth:
-    image: athulknair123/medblocks-auth
-    ports:
-      -  '4455:3000'
+    image: athulknair123/medblocks-auth:v0
     environment:
       - KRATOS_PUBLIC_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - KRATOS_BROWSER_URL=http://127.0.0.1:4433
-      - BASE_URL=http://127.0.0.1:4455
+      - KRATOS_BROWSER_URL=http://127.0.0.1/kratos/admin
+      - BASE_URL=http://127.0.0.1/auth/
       - HYDRA_ADMIN_URL=http://hydra:4445
    
 
   mailslurper:
-    image: oryd/mailslurper:smtps-latest
-    ports:
-      - '4436:4436'
-      - '4437:4437'
-   
+    image: oryd/mailslurper:smtps-latest   
 
 volumes: 
   db-data:
@@ -158,4 +175,5 @@ volumes:
   caddy_config:
 
 
+ 
  
