@@ -56,6 +56,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
 
+  
   caddy:
     image: caddy:2.4.1
     ports:
@@ -66,8 +67,10 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+
+
   kratos-migrate:
-    image: kratos
+    image: oryd/kratos:latest-sqlite
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     volumes:
@@ -76,12 +79,12 @@ services:
         target: /etc/config/kratos
     command: -c /etc/config/kratos/kratos.yml migrate sql -e --yes
     restart: on-failure
-   
-  
+ 
+
   kratos:
     depends_on:
       - kratos-migrate
-    image:  kratos
+    image: oryd/kratos:latest-sqlite
     restart: unless-stopped
     environment:
       - DSN=postgres://kratos:kratos@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
@@ -103,10 +106,10 @@ services:
       - type: bind
         source: ./kratos
         target: /etc/config/kratos
-   
+
 
   hydra:
-    image: hydra
+    image: oryd/hydra:v1.10.6
     command:
       serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
     volumes:
@@ -126,7 +129,7 @@ services:
    
 
   hydra-migrate:
-    image: hydra
+    image: oryd/hydra:v1.10.6
     environment:
       - DSN=postgres://hydra:hydra@db:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command:
@@ -140,7 +143,7 @@ services:
    
 
   auth:
-    image: auth
+    image: athulknair123/medblocks-auth:v0
     environment:
       - KRATOS_PUBLIC_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
